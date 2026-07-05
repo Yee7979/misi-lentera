@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pusat Kawalan Misi Lentera Hati v3.9</title>
+    <style>
+        :root {
+               /* 🕹️ 核心洗色：高对比度波普艺术马卡龙粉彩色系 */
+            --hijau: #bbf7d0;  
+            --biru: #bfdbfe;   
+            --oren: #fed7aa;   
+            --ungu: #e9d5ff;   
+            --pastel-orange-btn: #f58349; /* 橙色 */
+            --text-dark: #020617; /* 纯黑深色印刷体文字，确保最高Contrast */
+            --gold: #c2410c;   
+            --dark-space: #020617; /* 完美复刻图4：深邃极黑的大背景底色 */
+
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        
+        /* 🌌 全局舞台背景：暗黑夜空遮罩，衬托出亮色卡片的悬浮发光感 */
+        body { 
+            background: linear-gradient(135deg, #0f172a 0%, var(--dark-space) 100%); 
+            color: var(--text-dark); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 15px;
+            overflow-x: hidden;
+        }
+        
+        /* 🛡️ 主体内容舱：变成带有 3.5px 纯黑粗框的温柔浅色粉彩绘本纸张 */
+        #app { 
+            width: 100%; 
+            max-width: 480px; 
+            min-height: 88vh; 
+            background: #f7e7c6; /* 马卡龙高级奶油色 */
+            border-radius: 35px; 
+            border: 3.5px solid #020617; 
+            padding: 24px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            position: relative; 
+            box-shadow: 6px 6px 0px #020617; /* 纯黑立体实心厚边影，在暗黑背景下无处遁形 */
+        }
+        
+        .header { text-align: center; margin-bottom: 25px; width: 100%; }
+        .header h1 { font-size: 28px; font-weight: 900; color: #020617; text-shadow: 2px 2px 0px rgba(0,0,0,0.05); }
+        .header p { font-size: 14px; color: #475569; margin-top: 6px; font-weight: 700; }
+
+        #screen-menu { width: 100%; display: flex; flex-direction: column; gap: 16px; }
+        
+        /* 🕹️ 【3D复古粗黑边框 Bounce 弹性物理按钮核心重塑】 */
+        .comic-pop-btn {
+            width: 100%; padding: 18px; border-radius: 18px; border: 3.5px solid #020617 !important;
+            font-size: 17px; font-weight: 800; color: var(--text-dark) !important; cursor: pointer;
+            display: flex; align-items: center; gap: 14px;
+            box-shadow: 4px 4px 0px #020617 !important; /* 极度明显高对比度的纯黑立体阴影肉垫 */
+            transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+        .comic-pop-btn:hover { 
+            transform: translate(-1px, -1px); 
+            box-shadow: 5px 5px 0px #020617 !important;
+        }
+        /* 完美解压物理弹跳形变：厚度缩死到 0 */
+        .comic-pop-btn:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px #020617 !important;
+        }
+        .comic-pop-btn .icon { font-size: 24px; background: rgba(255,255,255,0.7); width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 14px; border: 2px solid #020617; }
+        
+        /* 完美复刻图1：马卡龙低饱和度活泼选项色彩组合 */
+        .btn-hijau { background-color: #a7f3d0; }
+        .btn-biru { background-color: #bfdbfe; }
+        .btn-oren { background-color: #f7d49c; }
+        .btn-ungu { background-color: #e2b5ff; }
+
+        .arkib-btn {
+            width: 100%; padding: 14px; margin-top: 15px; border-radius: 16px;
+            background: #ffffff; border: 2.5px dashed #020617;
+            color: #020617; font-weight: 800; font-size: 14px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            box-shadow: 2px 2px 0px #020617;
+        }
+        .arkib-btn:active { transform: translate(1px, 1px); box-shadow: 0px 0px 0px #020617; }
+        .arkib-btn.locked { opacity: 0.5; cursor: not-allowed; background: #f3f4f6; border-color: #94a3b8; color: #64748b; box-shadow: none; }
+
+        #screen-spin { display: none; width: 100%; flex-direction: column; align-items: center; gap: 25px; }
+        .wheel-container { position: relative; width: 270px; height: 260px; }
+        .wheel { width: 100%; height: 100%; border-radius: 50%; border: 6px solid #020617; position: relative; overflow: hidden; transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1); background: #fff; box-shadow: 4px 4px 0px #020617; }
+        .wheel-pointer { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 22px solid #e74c3c; z-index: 10; filter: drop-shadow(2px 2px 0px #020617); }
+        .spin-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 65px; height: 65px; background: white; border-radius: 50%; border: 3px solid #020617; font-weight: 900; color: #020617; cursor: pointer; font-size: 14px; box-shadow: 2px 2px 0px #020617; transition: all 0.1s; }
+        .spin-btn:active { transform: translate(-50%, -50%) scale(0.92); box-shadow: 0px 0px 0px #020617; }
+        
+        /* 🌌 完美复刻图4组合：大罩幕维持一片黑（Drive Contrast），而任务信封自身爆发对应的动态粉彩染色 */
+        #envelope-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); border-radius: 30px; z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+        .floating-letter { 
+            width: 100%; border-radius: 26px; padding: 22px; 
+            border: 3.5px solid #020617; transform: scale(0.8); opacity: 0; 
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            max-height: 85vh; overflow-y: auto; color: var(--text-dark);
+            box-shadow: 5px 5px 0px #020617;
+        }
+        .floating-letter.open { transform: scale(1); opacity: 1; }
+        .letter-title { font-weight: 900; font-size: 20px; text-align: center; color: #020617; border-bottom: 2px dashed rgba(2,6,23,0.15); padding-bottom: 8px; margin-bottom: 12px; }
+        .letter-body { font-size: 15px; line-height: 1.6; font-weight: 700; margin-bottom: 15px; background: rgba(255,255,255,0.7); padding: 14px; border-radius: 14px; border-left: 6px solid #020617; text-align: justify; }
+        .misi-arahan-box { background: rgba(255,255,255,0.9); border: 3px solid #020617; padding: 15px; border-radius: 16px; text-align: left; font-size: 14px; font-weight: 700; color: #020617; margin-bottom: 15px; line-height: 1.6; }
+
+        /* 分步式学习面板舱 */
+        #screen-hub { display: none; width: 100%; flex-direction: column; gap: 15px; }
+        .hub-step-panel { display: none; width: 100%; flex-direction: column; gap: 15px; animation: paneFadeEffect 0.4s ease-out; }
+        @keyframes paneFadeEffect {
+            0% { opacity: 0; transform: translateY(8px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 治疗系高对比度卡片盒样式 */
+        .media-card { 
+            width: 100%; background: #ffffff; border-radius: 24px; 
+            border: 3.5px solid #020617; padding: 18px; 
+            display: flex; flex-direction: column; gap: 12px; 
+            box-shadow: 3px 3px 0px #020617; /* 黑色粗硬框边缘 */
+        }
+        .media-title { font-size: 16px; font-weight: 900; color: #020617; display: flex; align-items: center; gap: 6px; }
+        .step-body-text { font-size: 16px; line-height: 1.6; color: #334155; text-align: justify; font-weight: 600; }
+
+        .iframe-container { width: 100%; position: relative; padding-bottom: 56.25%; height: 0; border-radius: 14px; overflow: hidden; border: 2.5px solid #020617; background: #000; }
+        .iframe-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        
+        .chibi-hero-pod { display: flex; gap: 12px; background: #f8fafc; padding: 14px; border-radius: 16px; border: 2.5px solid #020617; align-items: center; margin-top: 5px; }
+        .chibi-avatar { font-size: 34px; background: #fff; width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; border-radius: 50%; flex-shrink: 0; border: 2.5px solid #020617; }
+        .chibi-bubble { font-size: 14px; line-height: 1.6; color: #334155; text-align: left; width: 100%; font-weight: 600; }
+        .chibi-input { width: 100%; padding: 12px; background: #fff; border: 2.5px solid #020617; border-radius: 10px; color: #020617; font-size: 14px; margin-top: 8px; font-weight: 600; }
+
+        .refleksi-option-box { display: flex; flex-direction: column; gap: 10px; margin-top: 5px; width: 100%; }
+        .refleksi-label { display: flex; align-items: center; gap: 12px; background: #fff; padding: 12px 16px; border-radius: 14px; font-size: 15px; font-weight:700; cursor: pointer; transition: all 0.15s; border: 3.5px solid #020617; box-shadow: 2px 2px 0px #020617; }
+        .refleksi-label:hover { background: #f8fafc; transform: translate(-1px, -1px); box-shadow: 3px 3px 0px #020617; }
+        .refleksi-input-radio { width: 18px; height: 18px; cursor: pointer; accent-color: #ea580c; }
+
+        #screen-arkib-panel { display: none; width: 100%; flex-direction: column; gap: 14px; max-height: 70vh; overflow-y: auto; padding-right: 5px; }
+        .arkib-card { background: #fff; border: 3px solid #020617; border-radius: 16px; padding: 14px; font-size: 15px; line-height: 1.6; box-shadow: 4px 4px 0px #020617; color: var(--text-dark); }
+
+        /* 🕹️ 【按压弹跳控制动作按钮：全线统一复刻为你指定的元气粉彩橙色】 */
+        .action-btn { 
+            width: 100%; padding: 16px; border-radius: 16px; font-weight: 900; font-size: 16px; cursor: pointer; text-align: center; 
+            border: 3.5px solid #020617 !important;
+            box-shadow: 4px 4px 0px #020617 !important;
+            transition: all 0.08s ease-in-out;
+            background: var(--pastel-orange-btn); /* 粉彩暖橙色 */
+            color: white;
+        }
+        .action-btn:hover { transform: translate(-1px, -1px); box-shadow: 5px 5px 0px #020617 !important; }
+        .action-btn:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0px #020617 !important; }
+        
+        .retry-btn { width: 100%; padding: 13px; background: #fff; border: 3.5px solid #020617; color: #334155; border-radius: 16px; font-weight: 800; font-size: 14px; cursor: pointer; text-align: center; margin-top: 6px; box-shadow: 3px 3px 0px #020617; transition: all 0.1s; }
+        .retry-btn:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px #020617; }
+        
+        .back-home-btn { margin-top: auto; width: 100%; padding: 12px; background: #fff; border: 2.5px solid #020617; color: #020617; border-radius: 14px; font-weight: 800; font-size: 14px; cursor: pointer; text-align: center; box-shadow: 2px 2px 0px #020617; }
+        .back-home-btn:active { transform: translate(1px,1px); box-shadow: 0px 0px 0px #020617; }
+        
+        .modal-overlay { display: none; position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.45); z-index:200; align-items:center; justify-content:center; padding:20px; backdrop-filter: blur(4px); }
+        .modal-box { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); color: #020617; padding: 26px; border-radius: 28px; border: 4px solid #020617; text-align: center; box-shadow: 6px 6px 0px #020617; width: 100%; position: relative; }
+        .btn-padlet-orange { background: var(--pastel-orange-btn) !important; color: white !important; margin-top: 10px; }
+
+        #confetti-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 250; display: none; }
+        .back-banner { width: 100%; display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 800; cursor: pointer; padding-bottom: 8px; border-bottom: 2px solid #020617; margin-bottom: 12px; color: #020617;}
+    </style>
+</head>
+<body>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <div id="app">
+        <div class="header">
+            <h1>MISI LENTERA HATI</h1>
+            <p>Pusat Kawalan & Menyahkod Krisis Emosi Fizikal-Digital</p>
+        </div>
+
+        <div id="screen-menu">
+            <button class="comic-pop-btn btn-hijau" onclick="startMisi('HIJAU')">
+                <span class="icon">🤝🟢</span>
+                <div style="text-align: left;">
+                    <p style="font-size: 11px; opacity: 0.8; font-weight:800;">ZON KRISIS 01</p>
+                    <p>Hubungan Rakan Sebaya</p>
+                </div>
+            </button>
+            <button class="comic-pop-btn btn-biru" onclick="startMisi('BIRU')">
+                <span class="icon">🎒🔵</span>
+                <div style="text-align: left;">
+                    <p style="font-size: 11px; opacity: 0.8; font-weight:800;">ZON KRISIS 02</p>
+                    <p>Tekanan Akademik</p>
+                </div>
+            </button>
+            <button class="comic-pop-btn btn-oren" onclick="startMisi('OREN')">
+                <span class="icon">🏠🟠</span>
+                <div style="text-align: left;">
+                    <p style="font-size: 11px; opacity: 0.8; font-weight:800;">ZON KRISIS 03</p>
+                    <p>Harapan & Keluarga</p>
+                </div>
+            </button>
+            <button class="comic-pop-btn btn-ungu" onclick="startMisi('UNGU')">
+                <span class="icon">👩‍🏫🟣</span>
+                <div style="text-align: left;">
+                    <p style="font-size: 11px; opacity: 0.8; font-weight:800;">ZON KRISIS 04</p>
+                    <p>Hubungan dengan Guru</p>
+                </div>
+            </button>
+
+            <button class="arkib-btn locked" id="arkibMainBtn" onclick="openArkibPanel()">
+                🔒 Arkib Kuasa Lentera Hati (Selesai 1 Misi Mula Unlocked)
+            </button>
+        </div>
+
+        <div id="screen-spin">
+            <div class="back-banner" onclick="confirmExitMisi()"> ⬅️ Keluar & Set Semula Misi</div>
+            <p id="spin-instruction" style="font-size: 13px; font-weight: 800; text-align: center; color: #020617;"></p>
+            <div class="wheel-container">
+                <div class="wheel-pointer"></div>
+                <div class="wheel" id="wheelBox">
+                    <canvas id="wheelCanvas" style="width:100%; height:100%;"></canvas>
+                </div>
+                <button class="spin-btn" id="spinBtn" onclick="spinWheel()">SPIN</button>
+            </div>
+        </div>
+
+        <div id="envelope-overlay">
+            <div class="floating-letter" id="letterBox">
+                <div class="visual-header" style="text-align:center; font-size:40px;">☁️</div>
+                <div class="letter-title">MISI KABUS EMOSI</div>
+                
+                <div style="font-size:13px; font-weight:900; color:#020617; margin-bottom:4px;">🔎 PETUNJUK MISI:</div>
+                <div class="letter-body" id="letterBodyHint">Loading clue...</div>
+                
+                <div class="misi-arahan-box">
+                    💥 <b>Kabus emosi telah menutupi maklumat misi!</b><br><br>
+                    🧭 <b>1.</b> Sila cari Objek Misi berkod <span id="targetMisiCode" style="color:#c2410c; font-weight:900; font-size:16px;"></span> pada model fizikal anda.<br>
+                    🎒 <b>2.</b> Cabut papan tanda tersebut dan serahkan kepada fasilitator untuk mendapatkan <b>Kad Situasi</b> fizikal.<br>
+                    📖 <b>3.</b> Baca situasi tersebut dengan teliti bersama rakan.<br>
+                    🧱 <b>4.</b> Guna <b>tanah liat</b> untuk menggambarkan emosi yang kamu bayangkan berdasarkan situasi itu!
+                </div>
+                
+                <div style="font-size:14px; font-weight:800; color:#020617; text-align:center; margin-bottom:12px; line-height:1.5;">
+                    ➡️ Setelah selesai, mari cuba satu Teknik Daya Tindak yang dapat membantu watak tersebut mengurus emosinya.
+                </div>
+                
+                <button class="action-btn btn-next-step" onclick="openToolHub()">Teruskan Misi 🚀</button>
+                <button class="retry-btn" style="color:#dc2626; border-color:#020617;" onclick="confirmExitMisi()">❌ Batalkan Misi</button>
+            </div>
+        </div>
+
+        <div id="screen-hub">
+            <div class="back-banner" onclick="confirmExitMisi()"> ⬅️ Keluar & Set Semula Misi</div>
+            
+            <div style="text-align: center; margin-bottom: 5px;">
+                <span id="hub-badge-tag" style="padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 800; background-color:#020617; color: white; border:2px solid #020617;">🧰 TEKNIK DAYA TINDAK DIJUMPAI</span>
+                <h2 id="hub-title" style="font-size: 20px; margin-top: 10px; color: #020617; font-weight:900;">Nama Daya Tindak</h2>
+            </div>
+
+            <div class="hub-step-panel" id="panel-step-1">
+                <div class="media-card">
+                    <div class="media-title">🌱 Kenali Teknik Ini:</div>
+                    <div id="step-kenali-text" class="step-body-text"></div>
+                </div>
+                <div class="media-card">
+                    <div class="media-title">💡 Mengapa Teknik Ini Membantu?</div>
+                    <div id="step-mengapa-text" class="step-body-text"></div>
+                </div>
+                <button class="action-btn btn-next-step" onclick="switchSubStep(2)">➡️ Seterusnya: Jom Cuba Misi!</button>
+            </div>
+
+            <div class="hub-step-panel" id="panel-step-2">
+                <div class="media-card">
+                    <div class="media-title">🚀 Jom Cuba! (Aktiviti):</div>
+                    <div class="iframe-container" id="hub-media-video" style="display:none;">
+                        <iframe id="iframe-video" src="" allowfullscreen></iframe>
+                    </div>
+                    <div class="iframe-container" id="hub-media-game" style="display:none; padding-bottom: 75%;">
+                        <iframe id="iframe-game" src=""></iframe>
+                    </div>
+                    <div id="hub-media-custom" style="display:none; color:#334155; font-weight:600;" class="step-body-text"></div>
+                </div>
+
+                <button class="action-btn btn-finish-misi" onclick="unlockStep3Access()">✅ Saya sudah belajar teknik ini, Teknik Selesai!</button>
+                <button class="retry-btn" onclick="retryCopingSkill()">🔄 Saya ingin mencuba cara lain!</button>
+                
+                <div id="bridge-to-step3" style="display:none; width:100%; text-align:center; margin-top:10px; animation: bounce 2s infinite;">
+                    <p style="font-size:15px; color:#020617; font-weight:800; margin-bottom:8px;">Bagus! Kini, kongsikan refleksi kamu. 👇</p>
+                    <button class="action-btn btn-next-step" onclick="switchSubStep(3)">➡️ 🎤 Seterusnya, kongsikan Refleksi kamu</button>
+                </div>
+            </div>
+
+            <div class="hub-step-panel" id="panel-step-3">
+                <div class="media-card">
+                    <div class="media-title">🌟 Sesi Refleksi Wira Minda:</div>
+                    <p style="font-size:15px; color:#1e293b; font-weight:800; text-align:left; line-height:1.4;">1. Pada pendapat kamu, adakah Teknik Daya Tindak ini sesuai membantu rakan tersebut mengurus emosinya?</p>
+                    <div class="refleksi-option-box">
+                        <label class="refleksi-label"><input type="radio" name="q1" value="Sangat Sesuai" class="refleksi-input-radio"> 😄 Sangat Sesuai</label>
+                        <label class="refleksi-label"><input type="radio" name="q1" value="Sesuai" class="refleksi-input-radio"> 🙂 Sesuai</label>
+                        <label class="refleksi-label"><input type="radio" name="q1" value="Kurang Sesuai" class="refleksi-input-radio"> 🙁 Kurang Sesuai</label>
+                    </div>
+                    <p style="font-size:15px; color:#1e293b; font-weight:800; text-align:left; margin-top:10px; line-height:1.4;">2. Jika kamu berada dalam situasi yang hampir sama pada masa hadapan, adakah kamu ingin mencuba teknik ini?</p>
+                    <div class="refleksi-option-box">
+                        <label class="refleksi-label"><input type="radio" name="q2" value="Ya" class="refleksi-input-radio"> 👍 Ya, pasti!</label>
+                        <label class="refleksi-label"><input type="radio" name="q2" value="Mungkin" class="refleksi-input-radio"> 🤔 Mungkin</label>
+                        <label class="refleksi-label"><input type="radio" name="q2" value="Belum Pasti" class="refleksi-input-radio"> ⏳ Belum Pasti</label>
+                    </div>
+                </div>
+                <button class="action-btn btn-finish-misi" onclick="validateAndTriggerFinalModal()">🏁 Selesaikan Seluruh Misi & Hantar</button>
+            </div>
+        </div>
+
+        <div id="screen-arkib-panel">
+            <div class="back-banner" onclick="goHome()"> ⬅️ Tutup Gudang Kuasa</div>
+            <h3 style="color:#020617; font-size:17px; text-align:center; margin-bottom:10px; font-weight:900;">🛡️ Gudang Penuh Alatan Lentera Hati</h3>
+            <div id="arkib-list-container" style="display:flex; flex-direction:column; gap:12px;"></div>
+        </div>
+
+        <div class="modal-overlay" id="galakanModal">
+            <div class="modal-box">
+                <div style="font-size: 45px; margin-bottom: 5px;">🏆🎉</div>
+                <h3 style="font-weight: 900; font-size: 20px; color:#020617;">MISI BERJAYA DISELESAIKAN!</h3>
+                <p style="font-size:14px; color:#334155; font-weight:700; margin-bottom:12px; line-height:1.5;">Anda telah membantu watak tersebut mengenal pasti emosi dan mempelajari satu Teknik Daya Tindak.</p>
+                
+                <div style="background:rgba(217,119,6,0.06); padding:12px; border-radius:14px; border:2.5px solid #020617; margin-bottom:14px;">
+                    <span style="font-size:13px; font-weight:800; color:#c2410c;">🔥 KATA AZIMAT PENGUAT HATI:</span>
+                    <p id="modalQuoteText" style="font-size: 15px; font-style: italic; font-weight: 800; color:#020617; margin-top:5px; line-height:1.5;"></p>
+                </div>
+                
+                <button class="action-btn btn-padlet-orange" onclick="redirectToPadlet()">🗣️ Kongsi Refleksi & Rakam Suara di Padlet</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const krisisData = {
+            HIJAU: {
+                title: "Rakan Sebaya", color: "#86efac", darkColor: "#4ade80",
+                situasi: [
+                    { id: "SR01", emoji: "😭💔", hint: "Ali sedang berdepan satu cabaran bersama rakan-rakan semasa waktu rehat." },
+                    { id: "SR02", emoji: "😡✏️", hint: "Ali sedang menghadapi satu situasi yang menjejaskan hubungan persahabatannya." },
+                    { id: "SR03", emoji: "🤫💔", hint: "Siva berasa keliru selepas sesuatu yang penting berlaku antara dirinya dengan seorang rakan." },
+                    { id: "SR04", emoji: "🤬🛑", hint: "Mei Ling berhadapan dengan satu situasi yang tidak menyenangkan di sekolah." },
+                    { id: "SR05", emoji: "👥🥶", hint: "Ahmad sedang menghadapi satu cabaran semasa menjalankan aktiviti berkumpulan di dalam kelas." },
+                    { id: "SR06", emoji: "😭📄", hint: "Hasil usaha Ahmad telah mengalami sesuatu yang tidak dijangka." },
+                    { id: "SR07", emoji: "😤 kantin", hint: "Semasa waktu rehat, Ahmad sedang beratur untuk membeli makanan di kantin." }
+                ],
+                skillsPool: ["TF01", "TF02", "TF03", "TF04", "TF05", "TKS02"]
+            },
+            BIRU: {
+                title: "Tekanan Akademik", color: "#93c5fd", darkColor: "#60a5fa",
+                situasi: [
+                    { id: "SA01", emoji: "📝🤯", hint: "Mei Ling sedang berhadapan dengan satu cabaran semasa sesi pembelajaran." },
+                    { id: "SA02", emoji: "📚😫", hint: "Aisyah sedang memikirkan tugasan sekolah yang semakin banyak." },
+                    { id: "SA03", emoji: "⏳📝", hint: "Ravi sedang membuat persediaan menghadapi satu ujian di sekolah." },
+                    { id: "SA04", emoji: "📉🎒", hint: "Ravi mengalami satu situasi selepas menerima keputusan pembelajarannya." }
+                ],
+                skillsPool: ["TSA01", "TSA02", "TSA03", "TSA04"]
+            },
+            OREN: {
+                title: "Harapan & Keluarga", color: "#fdba74", darkColor: "#f97316",
+                situasi: [
+                    { id: "SK01", emoji: "😴 tuisyen", hint: "Aisyah mempunyai rutin harian yang sangat padat selepas waktu persekolahan." },
+                    { id: "SK02", emoji: "😤📈", hint: "Aisyah sedang menghadapi satu situasi bersama ahli keluarganya di rumah." }
+                ],
+                skillsPool: ["TE01", "TE02", "TE03"]
+            },
+            UNGU: {
+                title: "Hubungan dengan Guru", color: "#d8b4fe", darkColor: "#c084fc",
+                situasi: [
+                    { id: "SG01", emoji: "👩‍🏫💧", hint: "Ravi berhadapan dengan satu situasi semasa guru sedang mengendalikan aktiviti di dalam kelas." },
+                    { id: "SG02", emoji: "😰🚪", hint: "Ali menghadapi satu situasi yang melibatkan guru dan peraturan di dalam kelas." }
+                ],
+                skillsPool: ["TE03", "TKS01", "TKS03", "TKS04"]
+            }
+        };
+
+        const masterSkillsRepo = {
+            "TF01": { title: "TF01: Kad Pelukan Rama-rama", type: "video", url: "https://drive.google.com/file/d/1xfA6wPf4KHZxu5ViLKAuWGzNf_xuQq5z/preview", kenali: "Teknik Pelukan Rama-rama (Butterfly Hug) ialah kaedah menenangkan diri secara somatik dengan menyilangkan tangan pada dada and menepuk bahu berselang-seli.", mengapa: "Teknik ini memberikan stimulasi bilateral yang bertindak menstabilkan sistem saraf amigdala yang terkejut, menurunkan kadar degupan jantung dengan pantas akibat kecemasan emosi." },
+            "TF02": { title: "TF02: Kad Jentera Nafas 4-7-8", type: "video", url: "https://drive.google.com/file/d/1CmhpyBpGblCv50PLrojEM-VgF8dyPGJq/preview", kenali: "Jentera Nafas 4-7-8 memerlukan murid menarik nafas 4 saat, menahan nafas 7 saat, dan menghembus perlahan dalam masa 8 saat.", mengapa: "Menahan dan memanjangkan hembusan nafas mengaktifkan sistem saraf parasimpatetik, memaksa tubuh fizikal keluar daripada mod panik ke mod rehat total." },
+            "TF03": { title: "TF03: Kad Regangan Wira", type: "video", url: "https://drive.google.com/file/d/1qmdUIF2HEPSBJdvx07M6SkbBWCuDSX43/preview", kenali: "Regangan Wira merupakan senaman fizikal ringkas yang memfokuskan kepada pelepasan ketegangan otot-otot di bahagian bahu, leher dan dada.", mengapa: "Stres psikososial mengumpul asid laktik dalam otot. Regangan fizikal melepaskan hormon endorfin untuk meredakan bebanan somatik tersebut." },
+            "TF04": { title: "TF04: Kad Picit Clay", type: "custom", html: `🧱 Ambil <b>Segumpal Tanah Liat</b> fizikal anda.<br><br>🔥 <b>ARAHAN AKSI:</b> Guna seluruh tenaga jari anda, <b>RAMAS, PICIT, dan PENYEKKAN</b> tanah liat itu sepuas-puas hati selama 1 minit! Letakkan semua emosi geram pada setiap picitan. Setelah dada terasa lapang, <b>bentukkan tanah liat tersebut menjadi apa-apa sahaja bentuk yang menggambarkan perasaan anda sekarang atau bentuk baru yang membuat anda tersenyum!</b> 🥰`, kenali: "Teknik Picit Clay memanfaatkan manipulasi bahan kreatif sebagai medium pelepasan emosi yang agresif atau terpendam secara selamat.", mengapa: "Tindakan meramas dan mengubah bentuk tanah liat memindahkan tenaga kemarahan fizikal kepada objek luaran (katarsis emosi), memberikan kelegaan psikologi yang pantas." },
+            "TF05": { title: "TF05: Kad Tegukan Segar", type: "custom", html: `🥛 <b>ARAHAN AKSI:</b> Ambil cawan berisi air bersih sejuk. Minum air tersebut menerusi <b>3 TEGUKAN PERLAHAN</b>:<br><br>• <i>Tegukan 1:</i> Sejukkan rasa marah.<br>• <i>Tegukan 2:</i> Minda kembali jernih.<br>• <i>Tegukan 3:</i> Tarik nafas dalam-dalam, anda kini stabil! 😎`, kenali: "Tegukan Segar ialah teknik penstabilan fokus sensori-motor berpandukan media cecair sejuk untuk memotong stimulasi cemas.", mengapa: "Perubahan suhu drastik di tekak merangsang saraf vagus, yang secara biologi menurunkan ritma panik sistem kognitif." },
+            "TSA01": { title: "TSA01: Kad Alunan Damai (Audio Bunyi Hujan)", type: "video", url: "https://drive.google.com/file/d/12geDnnjZMOfIhmVvTP1wkEGTftOAaEiY/preview", kenali: "Dengar bunyi hujan atau alam semula jadi secara tenang sambil menarik nafas secara perlahan-lahan selama satu minit.", mengapa: "Terapi audio berasaskan white noise frekuensi alam meneutralkan gelombang otak yang bercelaru, membantu minda kembali fokus." },
+            "TSA02": { title: "TSA02: Kad Ketukan Magik", type: "game", url: "https://kidmons.com/game/piano-online/", kenali: "Mainkan nota muzik secara bebas pada piano mini digital di skrin peranti anda selama 1 minit untuk mengalihkan fokus kognitif.", mengapa: "Teknik pengalihan fokus sensori menerusi pendengaran dan sentuhan jari pada skrin memotong kitaran fikiran cemas." },
+            "TSA03": { title: "TSA03: Kad Fokus 5-4-3-2-1 (Grounding)", type: "video", url: "https://drive.google.com/file/d/1OZp1wXpmEvTkcJy8mevJ3hWt71Bcjtw9/preview", kenali: "Teknik Grounding meminta murid menamakan objek di sekeliling berdasarkan pancaindera: cari 3 objek warna merah, dengar 2 bunyi, dan sentuh 1 permukaan pakaian.", mengapa: "Grounding memaksa orientasi kognitif murid keluar daripada bayangan cemas masa depan kembali kepada realiti fizikal 'Here and Now'." },
+            "TSA04": { title: "TSA04: Kad Bebas Bunyi", type: "custom", html: `🧘 <b>ARAHAN AKSI:</b> Tekap kedua-dua belah telinga dengan tangan. Pejam mata rapat. Tarik nafas dalam dan hembus perlahan. Fokus 100% pada <b>bunyi dengusan nafas sendiri</b> di dalam kepala. Ulang sebanyak 5 kali.`, kenali: "Bebas Bunyi ialah teknik pengasingan auditori kognitif untuk mengurangkan beban input rangsangan luaran yang melampau.", mengapa: "Dengan menutup bunyi luaran, murid mengurangkan stimulasi sensorik yang membebani otak yang sedang stres." },
+            "TE01": { title: "TE01: Kad Conteng Luah", type: "custom", html: `🌪️ <b>ARAHAN AKSI:</b> Ambil krayon <b>HITAM</b> dan sehelai kertas kosong.<br><br>1. Dalam masa 30 saat, <b>CONTENG</b> kertas sekuat hati pergerakan laju seperti taufan!<br>2. Genggam erat kertas tersebut, <b>RENYUKKAN</b> menjadi bola kecil.<br>3. Angkat tangan anda, dan <b>BALING</b> bola stres itu ke dalam tong sampah!`, kenali: "Conteng Luah ialah intervensi ekspresi seni kreatif berciri kinestetik agresif yang selamat untuk meluahkan konflik emosi dalaman.", mengapa: "Proses merenyuk dan membaling bertindak sebagai simbolik penyingkiran masalah, menukar kemarahan kepada tindakan fizikal." },
+            "TE02": { title: "TE02: Kad Borang Ajaib Luahan Hati", type: "custom", html: `<b>💌 Misi Utusan Rahsia: Borang Ajaib Luahan Hati</b><br><br>✍️ Salin skrip ini pada sehelai kertas warna:<br>• <i>“Mami / Papa, [Nama Anda] sayang sangat-sangat! 💖”</i><br>• <i>“Tapi... saya rasa tertekan apabila mami papa cakap tentang [Peperiksaan]. 🥺”</i><br>• <i>“Saya janji akan cuba lagi, tapi harap boleh peluk saya hari ini. 🫂”</i><br><br>🚀 <b>Aksi Fizikal:</b> Lipat jadi <b>Kapal Terbang Kertas</b> dan serahkan malam ini!`, kenali: "Borang Ajaib menggabungkan terapi bertulis dan teknik skrip komunikasi asertif untuk murid meluahkan isi hati kepada keluarga.", mengapa: "Melalui struktur ayat yang selamat, murid belajar menyusun emosi rapuh mereka kepada bentuk bahasa luahan yang sihat." },
+            "TE03": { title: "TE03: Kad Warna Tenang (Mini Mandala)", type: "custom", html: `🎨 <b>ARAHAN AKSI:</b> Ambil <b>Kad Mini Mandala</b>.<br><br>🧘 Warnakan corak bulatan tersebut dengan perlahan. ⚠️ <b>Syarat Ketat:</b> Pastikan warna anda <b>TIDAK TERKELUAR</b> langsung dari garisan sempadan hitam! Fokuskan minda pada mata pensel.`, kenali: "Terapi Mewarna Mandala mengeksploitasi fokus visual berstruktur geometri bulat untuk mematurkan ketenangan murid.", mengapa: "Aktiviti mewarna dalam garisan yang memerlukan fokus tinggi menapis keluar gangguan kognitif negatif." },
+            "TKS01": { title: "TKS01: Kad Kata Positif", type: "custom", html: `<b>🔮 Misi Cermin Sakti: Mantra Pelindung Jiwa</b><br><br>“Ingat, <b>KITA SENTIASA TAHU BETAPA BERHARGANYA DIRI KITA!</b> 🌟”<br><br>💎 <b>TUGASAN HERO:</b> Rapatkan tangan di dada, pejam mata, sebut <b>3 Ayat Magik</b> ini dengan jelas:<br><br>• 📢 <i>“Saya anak murid yang baik dan disayangi!”</i><br>• 📢 <i>“Tidak mengapa jika buat silap hari ini, saya cuba lagi esok!”</i><br>• 📢 <i>“Diri saya sangat hebat, unik, dan saya selamat!”</i>`, kenali: "Kata Positif ialah teknik dialog kendiri untuk menentang suara kritik luaran yang menjejaskan harga diri murid.", mengapa: "Menyebut ayat magik memperkukuh penegasan kendiri, menggantikan skema pemikiran negatif kepada bentuk pemikiran berdaya tahan." },
+            "TKS02": { title: "TKS02: Kad Suara Wira (Padlet)", type: "game", url: "https://padlet.com/gipgd25021194/pusat-log-misi-lentera-hati-suara-hati-saya-3wwmp77xras5cbni", kenali: "Rakam satu pesanan suara digital berani pada dinding Padlet: 'Saya kuat dan saya boleh hadapi cabaran ini!'", mengapa: "Merekodkan suara pengukuhan minda secara terbuka memvalidasi kekuatan diri murid di samping mewujudkan rangkaian sokongan." },
+            "TKS03": { title: "TKS03: Kad Talian Hayat", type: "custom", html: `<b>🦸‍♂️🛡️ Misi Sekutu Rahsia: Jom Cari Geng Wira!</b><br><br><div class="chibi-hero-pod"><div class="chibi-avatar">🦸‍♂️</div><div class="chibi-bubble"><b>Formula Skrip Pembuka Bicara Hero:</b><br>1. <i>'Cikgu, saya rasa dalam hati saya ada batu besar yang berat. Boleh saya kongsi?'</i><br>2. <i>'Kawan, saya tengah sedih hari ini. Boleh awak duduk sebelah saya sekejap?'</i></div></div><br>✍️ <b>TUGASAN INTERAKTIF:</b> Taip nama sekutu rahsia anda:<br><input type="text" class="chibi-input" placeholder="Taip Nama Guru Kaunseling / Kawan Baik Anda..."><br><br>🎯 <b>Janji Wira:</b> Apabila loceng tamat sekolah berbunyi, hantarkan satu senyuman kepada mereka.` },
+            "TKS04": { title: "TKS04: Kad Kotak Kesyukuran", type: "custom", html: `💎 <b>Misi Pemburu Permata: Kotak Tiga Bahagia</b><br><br>🔍 Fikirkan dan taip 3 perkara bahagia anda dalam masa <b>3 hari ini</b>:<br><br>1. 🍎 <i>Makanan sedap?</i><br><input type="text" class="chibi-input" placeholder="Permata 1..."><br>2. 🤝 <i>Seseorang bantu anda?</i><br><input type="text" class="chibi-input" placeholder="Permata 2..."><br>3. 😂 <i>Ketawa gembira?</i><br><input type="text" class="chibi-input" placeholder="Permata 3..."><br>`, kenali: "Kotak Kesyukuran memanfaatkan prinsip psikologi positif untuk melatih kognitif fokus kepada elemen kesyukuran.", mengapa: "Mengimbas semula detik gembira 3 hari lepas meluaskan skope perhatian murid, menghalang fikiran daripada tertumpu pada emosi sedih." }
+        };
+
+        const motivasiList = [
+            "Gagal sekali bukan gagal selamanya. Saya wira yang berani cuba lagi!",
+            "Setiap masalah ada jalan keluar. Tarik nafas, saya boleh buat!",
+            "Markah tidak menentukan nilai murni dalam hati saya. Saya tetap berharga.",
+            "Kerja yang banyak akan jadi sikit kalau saya mula buat satu demi satu.",
+            "Saya sayang diri saya. Tidak mengapa kalau saya belum faham hari ini."
+        ];
+
+        let currentActiveMisi = "";
+        let finalSelectedIndex = 0;
+        let selectedSkillId = ""; 
+        let isMisiCompletedOnce = false; 
+        let audioCtx = null;
+
+        function initAudio() { 
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+        window.addEventListener('click', initAudio);
+        window.addEventListener('touchstart', initAudio);
+
+        function playBeep(freq, type, duration) {
+            initAudio();
+            if (!audioCtx) return;
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playSpinClick() { playBeep(750, 'triangle', 0.04); }
+        function playSuccessSound() {
+            playBeep(523.25, 'sine', 0.12);
+            setTimeout(() => playBeep(659.25, 'sine', 0.12), 80);
+            setTimeout(() => playBeep(783.99, 'sine', 0.25), 160);
+        }
+
+        // 🔊【100% 修复点A】：现场芯片级合成最热烈的口哨和雷鸣掌声 + 彩带爆开音效！
+        function playApplauseCheer() {
+            initAudio();
+            if (!audioCtx) return;
+            
+            // 1. 模拟满屏璀璨彩带爆开的瞬时高频“砰”声（Confetti Burst）
+            let burstOsc = audioCtx.createOscillator();
+            let burstGain = audioCtx.createGain();
+            burstOsc.type = 'sine';
+            burstOsc.frequency.setValueAtTime(180, audioCtx.currentTime);
+            burstOsc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.15);
+            burstGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            burstGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.15);
+            burstOsc.connect(burstGain);
+            burstGain.connect(audioCtx.destination);
+            burstOsc.start();
+            burstOsc.stop(audioCtx.currentTime + 0.15);
+
+            // 2. 模拟全场雷鸣般的治愈掌声（热烈拍手效果声）
+            for (let i = 0; i < 25; i++) {
+                setTimeout(() => {
+                    let osc = audioCtx.createOscillator();
+                    let gain = audioCtx.createGain();
+                    let randomFreq = 200 + Math.random() * 350; 
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(randomFreq, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.06);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.06);
+                }, i * 30); 
+            }
+        }
+
+        function confirmExitMisi() {
+            playBeep(350, 'triangle', 0.1);
+            if (confirm("Adakah anda pasti mahu keluar dan set semula misi ini? Semua kemajuan semasa zon ini akan dikosongkan.")) {
+                goHome();
+            }
+        }
+
+        function startMisi(warna) {
+            playBeep(550, 'sine', 0.08);
+            currentActiveMisi = warna;
+            document.getElementById('screen-menu').style.display = 'none';
+            document.getElementById('screen-spin').style.display = 'flex';
+            document.getElementById('spin-instruction').innerText = "Zon Misi Warna " + krisisData[warna].title + " Aktif! Klik SPIN Untuk Mendapatkan Petunjuk.";
+            drawWheel(warna);
+        }
+
+        function goHome() {
+            document.getElementById('screen-spin').style.display = 'none';
+            document.getElementById('screen-hub').style.display = 'none';
+            document.getElementById('screen-arkib-panel').style.display = 'none';
+            document.getElementById('envelope-overlay').style.display = 'none';
+            document.getElementById('screen-menu').style.display = 'flex';
+            document.getElementById('iframe-video').src = "";
+            document.getElementById('iframe-game').src = "";
+            hideConfetti();
+        }
+
+        function drawWheel(warna) {
+            const canvas = document.getElementById('wheelCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 300; canvas.height = 300;
+            const data = krisisData[warna];
+            const segCount = data.situasi.length;
+            const angle = 360 / segCount;
+            
+            ctx.clearRect(0,0,300,300);
+            for(let i=0; i<segCount; i++) {
+                ctx.beginPath();
+                ctx.moveTo(150,150);
+                ctx.arc(150,150,140, (i*angle)*Math.PI/180, ((i+1)*angle)*Math.PI/180);
+                ctx.fillStyle = i % 2 === 0 ? data.color : data.darkColor;
+                ctx.fill();
+                ctx.lineWidth = 3; ctx.strokeStyle = '#020617'; ctx.stroke();
+                
+                ctx.save();
+                ctx.translate(150,150);
+                ctx.rotate((i*angle + angle/2)*Math.PI/180);
+                ctx.fillStyle = "#020617"; ctx.font = "bold 14px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText(data.situasi[i].id + " " + data.situasi[i].emoji, 85, 4);
+                ctx.restore();
+            }
+        }
+
+        function spinWheel() {
+            playBeep(850, 'sine', 0.05);
+            const btn = document.getElementById('spinBtn');
+            const wheel = document.getElementById('wheelBox');
+            btn.disabled = true;
+            
+            let tickCount = 0;
+            let clickInterval = setInterval(() => { 
+                playSpinClick(); 
+                tickCount++;
+                if(tickCount > 26) clearInterval(clickInterval);
+            }, 130);
+
+            const randomDeg = Math.floor(Math.random() * 360) + 1440; 
+            wheel.style.transform = `rotate(${randomDeg}deg)`;
+            
+            setTimeout(() => {
+                clearInterval(clickInterval);
+                playSuccessSound();
+                
+                const data = krisisData[currentActiveMisi];
+                const actualDegrees = randomDeg % 360;
+                const segCount = data.situasi.length;
+                const angle = 360 / segCount;
+                
+                let targetSlot = Math.floor((360 - actualDegrees) / angle) % segCount;
+                finalSelectedIndex = targetSlot;
+
+                triggerEnvelopeOverlay(data.situasi[targetSlot]);
+                btn.disabled = false;
+                wheel.style.transition = 'none';
+                wheel.style.transform = `rotate(${actualDegrees}deg)`;
+                setTimeout(() => { wheel.style.transition = 'transform 4s cubic-bezier(0.1, 0.8, 0.1, 1)'; }, 50);
+            }, 4000);
+        }
+
+        function triggerEnvelopeOverlay(dataObj) {
+            const overlay = document.getElementById('letterBox');
+            
+            if(currentActiveMisi === "HIJAU") {
+                overlay.style.background = "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)"; 
+            } else if(currentActiveMisi === "BIRU") {
+                overlay.style.background = "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)"; 
+            } else if(currentActiveMisi === "OREN") {
+                overlay.style.background = "linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)"; 
+            } else if(currentActiveMisi === "UNGU") {
+                overlay.style.background = "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)"; 
+            }
+
+            document.getElementById('envelope-overlay').style.display = 'flex';
+            document.getElementById('targetMisiCode').innerText = dataObj.id;
+            document.getElementById('letterBodyHint').innerText = dataObj.hint;
+            
+            setTimeout(() => {
+                document.getElementById('letterBox').classList.add('open');
+            }, 200);
+        }
+
+        function openToolHub() {
+            document.getElementById('envelope-overlay').style.display = 'none';
+            document.getElementById('letterBox').classList.remove('open');
+            document.getElementById('screen-spin').style.display = 'none';
+            document.getElementById('screen-hub').style.display = 'flex';
+            
+            const currentPool = krisisData[currentActiveMisi].skillsPool;
+            selectedSkillId = currentPool[Math.floor(Math.random() * currentPool.length)]; 
+
+            switchSubStep(1); 
+            renderCopingSkill(selectedSkillId);
+        }
+
+        function switchSubStep(stepNum) {
+            playBeep(600, 'sine', 0.05);
+            document.getElementById('panel-step-1').style.display = "none";
+            document.getElementById('panel-step-2').style.display = "none";
+            document.getElementById('panel-step-3').style.display = "none";
+            document.getElementById('panel-step-' + stepNum).style.display = "flex";
+            if(stepNum === 2) {
+                document.getElementById('bridge-to-step3').style.display = "none";
+            }
+        }
+
+        function unlockStep3Access() {
+            playBeep(650, 'sine', 0.05);
+            document.getElementById('bridge-to-step3').style.display = "block";
+            document.getElementById('bridge-to-step3').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function retryCopingSkill() {
+            const currentPool = krisisData[currentActiveMisi].skillsPool;
+            const filteredPool = currentPool.filter(id => id !== selectedSkillId);
+            if(filteredPool.length > 0) {
+                selectedSkillId = filteredPool[Math.floor(Math.random() * filteredPool.length)];
+            } else {
+                selectedSkillId = currentPool[Math.floor(Math.random() * currentPool.length)];
+            }
+            
+            switchSubStep(2);
+            renderCopingSkill(selectedSkillId);
+        }
+
+        function renderCopingSkill(skillId) {
+            const skill = masterSkillsRepo[skillId];
+            document.getElementById('hub-title').innerText = skill.title;
+            
+            document.getElementById('step-kenali-text').innerText = skill.kenali;
+            document.getElementById('step-mengapa-text').innerText = skill.mengapa;
+
+            document.getElementById('hub-media-video').style.display = "none";
+            document.getElementById('hub-media-game').style.display = "none";
+            document.getElementById('hub-media-custom').style.display = "none";
+            document.getElementById('iframe-video').src = "";
+            document.getElementById('iframe-game').src = "";
+
+            if(skill.type === "video") {
+                document.getElementById('hub-media-video').style.display = "flex";
+                document.getElementById('iframe-video').src = skill.url;
+            } else if(skill.type === "game") {
+                document.getElementById('hub-media-game').style.display = "flex";
+                document.getElementById('iframe-game').src = skill.url;
+            } else if(skill.type === "custom") {
+                document.getElementById('hub-media-custom').style.display = "block";
+                document.getElementById('hub-media-custom').innerHTML = skill.html;
+            }
+        }
+
+        // 🏁【100% 修复点B】：答题校验通过后，瞬间融合触发大和弦金币声 + 漫天彩带 + 真实的雷鸣鼓掌音效
+        function validateAndTriggerFinalModal() {
+            const r1 = document.getElementsByName('q1');
+            const r2 = document.getElementsByName('q2');
+            let q1Checked = false, q2Checked = false;
+
+            for(let i=0; i<r1.length; i++) {
+                if(r1[i].checked) q1Checked = true;
+                if(r2[i].checked) q2Checked = true;
+            }
+
+            if(!q1Checked || !q2Checked) {
+                playBeep(250, 'sawtooth', 0.15);
+                alert("⚠️ Sila pilih jawapan untuk kedua-dua soalan Refleksi Diri sebelum menyelesaikan misi!");
+                return;
+            }
+
+            // 完美的最终多媒体震撼闭幕大胜利！
+            playSuccessSound();   // 响起金币大三和弦
+            showConfetti();       // 漫天飘落烟花彩屑
+            playApplauseCheer();  // 🔥 就是这里！完美唤醒全场掌声，100% 绝对发出好听的音效！
+            
+            document.getElementById('galakanModal').style.display = "flex";
+            document.getElementById('modalQuoteText').innerText = `"${motivasiList[Math.floor(Math.random() * motivasiList.length)]}"`;
+            
+            isMisiCompletedOnce = true;
+            const arkibBtn = document.getElementById('arkibMainBtn');
+            arkibBtn.classList.remove('locked');
+            arkibBtn.innerText = "🔓 Masuk Arkib Kuasa Lentera Hati (TERBUKA)";
+        }
+
+        function redirectToPadlet() {
+            document.getElementById('galakanModal').style.display = "none";
+            window.open('https://padlet.com/gipgd25021194/pusat-log-misi-lentera-hati-suara-hati-saya-3wwmp77xras5cbni', '_blank');
+            goHome();
+        }
+
+        function openArkibPanel() {
+            if(!isMisiCompletedOnce) {
+                playBeep(300, 'sawtooth', 0.15);
+                alert("🔒 Akses Disekat! Sila selesaikan sekurang-kurangnya SATU misi situasi penuh terlebih dahulu untuk mendapatkan lencana.");
+                return;
+            }
+            playBeep(500, 'sine', 0.05);
+            document.getElementById('screen-menu').style.display = 'none';
+            document.getElementById('screen-arkib-panel').style.display = 'flex';
+            
+            const container = document.getElementById('arkib-list-container');
+            container.innerHTML = ""; 
+
+            for(let key in masterSkillsRepo) {
+                const item = masterSkillsRepo[key];
+                const card = document.createElement('div');
+                card.className = "arkib-card";
+                if(item.type === 'custom') {
+                    card.innerHTML = `<div style="color:#d97706; font-weight:900; margin-bottom:5px;">${item.title}</div>${item.html}`;
+                } else {
+                    card.innerHTML = `<div style="color:#d97706; font-weight:900; margin-bottom:5px;">${item.title}</div><p style="color:#475569; font-style:italic;">[Alatan Berpautan Media Digital Atas Talian] Sila akses penuh alatan visual ini menerusi cabaran roda utama intervensi krisis.</p><br><b>🌱 Kenali:</b> ${item.kenali}<br><b>💡 Mengapa:</b> ${item.mengapa}`;
+                }
+                container.appendChild(card);
+            }
+        }
+
+        let confettiInterval;
+        let particles = [];
+        const confettiCanvas = document.getElementById('confetti-canvas');
+        const confettiCtx = confettiCanvas.getContext('2d');
+
+        function showConfetti() {
+            confettiCanvas.style.display = "block";
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+            particles = [];
+            for (let i = 0; i < 120; i++) {
+                particles.push({
+                    x: Math.random() * confettiCanvas.width,
+                    y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+                    r: Math.random() * 6 + 4,
+                    d: Math.random() * confettiCanvas.height,
+                    color: `hsl(${Math.random() * 360}, 90%, 60%)`,
+                    tilt: Math.random() * 10 - 5,
+                    tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+                    tiltAngle: 0
+                });
+            }
+            clearInterval(confettiInterval);
+            confettiInterval = setInterval(drawConfettiFrame, 20);
+        }
+
+        function drawConfettiFrame() {
+            confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            particles.forEach((p, idx) => {
+                p.tiltAngle += p.tiltAngleIncremental;
+                p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+                p.x += Math.sin(p.tiltAngle);
+                confettiCtx.beginPath();
+                confettiCtx.lineWidth = p.r;
+                confettiCtx.strokeStyle = p.color;
+                confettiCtx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+                confettiCtx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+                confettiCtx.stroke();
+                
+                if (p.y > confettiCanvas.height) {
+                    particles[idx].y = -20;
+                    particles[idx].x = Math.random() * confettiCanvas.width;
+                }
+            });
+        }
+
+        function hideConfetti() {
+            clearInterval(confettiInterval);
+            confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            confettiCanvas.style.display = "none";
+        }
+    </script>
+</body>
+</html>
